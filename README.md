@@ -1,4 +1,4 @@
-Perfect! Here are the simplified steps:
+
 
 ## For Creating the Website in Lovable:
 
