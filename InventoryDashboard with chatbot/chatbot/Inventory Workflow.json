@@ -1,0 +1,378 @@
+{
+  "name": "Inventory Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        192,
+        192
+      ],
+      "id": "594c9cda-4f19-4035-b167-5c93117e9e86",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "iP6V2NQbxPy0l3LQ",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1lbkUL3h32z7kic-6r7FPXk1NijLKEolTcZoPrgFtbHs",
+          "mode": "list",
+          "cachedResultName": "Inventory Data",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1lbkUL3h32z7kic-6r7FPXk1NijLKEolTcZoPrgFtbHs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1lbkUL3h32z7kic-6r7FPXk1NijLKEolTcZoPrgFtbHs/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Product Name": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Product_Name', ``, 'string') }}",
+            "Opening \n Stock": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Opening___Stock', ``, 'string') }}",
+            "Purchase/\n Stock in": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Purchase___Stock_in', ``, 'string') }}",
+            "Number of \n Units Sold": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Number_of___Units_Sold', ``, 'string') }}",
+            "Hand-In-\n Stock": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Hand-In-__Stock', ``, 'string') }}",
+            "Cost Price \n Per Unit (USD)": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Cost_Price___Per_Unit__USD_', ``, 'string') }}",
+            "Cost Price\n Total (USD)": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Cost_Price__Total__USD_', ``, 'string') }}",
+            "ID": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('ID__using_to_match_', ``, 'string') }}"
+          },
+          "matchingColumns": [
+            "ID"
+          ],
+          "schema": [
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Product Name",
+              "displayName": "Product Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Opening \n Stock",
+              "displayName": "Opening \n Stock",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Purchase/\n Stock in",
+              "displayName": "Purchase/\n Stock in",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Number of \n Units Sold",
+              "displayName": "Number of \n Units Sold",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Hand-In-\n Stock",
+              "displayName": "Hand-In-\n Stock",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Cost Price \n Per Unit (USD)",
+              "displayName": "Cost Price \n Per Unit (USD)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Cost Price\n Total (USD)",
+              "displayName": "Cost Price\n Total (USD)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        496,
+        208
+      ],
+      "id": "fe88663c-6a51-479a-9681-472ae0b756c1",
+      "name": "update rows",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "fxMHXD0Z0PKBNaUJ",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.body.message }}",
+        "options": {
+          "systemMessage": "=You are an AI agent that manages information in a Google Sheet. Your job is to read incoming chat messages, review the current sheet data, and update any relevant information as needed.\n\n## Core Process\n\n1. **Read the message**: Understand what the user is asking for or reporting\n2. **Review the sheet**: Use the read tool to get current data from all relevant sections\n3. **Analyze**: Determine what information needs to be updated, added, modified, or deleted\n4. **Take action**: Use the appropriate tool (update/delete) to make necessary changes\n5. **Confirm**: Briefly explain what you updated or deleted\n\n## Available Tools\n\n- `read_google_sheet`: Retrieves current data from the Google Sheet\n- `update_google_sheet`: Updates specific cells or ranges in the sheet, or if it does not exist appends new rows to the end of the data\n- `delete_google_sheet`: Deletes specific rows, columns, or clears data from the sheet\n🔤 Case-Insensitive Matching Rules\n\nWhen searching for, updating, or deleting a product, comparisons must ignore case.\n\nWhen adding a new product, check for existing items using case-insensitive matching to prevent duplicates.\n\nExample behavior:\n\nSheet contains “Monitor”.\n\nUser says “Give info of monitor” → system correctly identifies “Monitor”.\n\nUser says “Add MONITOR” → system recognizes it as a duplicate.\n## Delete Specifications\n\n**Complete Product Deletion Process - Including ID:**\n\n1. **First, read the sheet** to find the product and its row number\n2. **Then clear the entire row** including the ID column using update function with empty values\n\n**Process for deleting specific products (including ID):**\n1. Use `read_google_sheet` to find the product and get its exact row number\n2. Use `update_google_sheet` with:\n   - `operation: \"update\"`\n   - `range: \"A[row_number]:Z[row_number]\"` (clears entire row including Column A for ID)\n   - `data: [[\"\", \"\", \"\", \"\", \"\", \"\", \"\", \"\", \"\", \"\", \"\", \"\", \"\", \"\", \"\", \"\", \"\", \"\", \"\", \"\", \"\", \"\", \"\", \"\", \"\", \"\"]]` (26 empty values for columns A-Z)\n\n**Example: Delete product \"Desktop\" including its ID**\n1. Read sheet → Find \"Desktop\" is in row 32 with ID=DESK001\n2. Update range \"A32:Z32\" with 26 empty values\n3. Confirm: \"Completely deleted product 'Desktop' including its ID by clearing entire row 32\"\n\n**What gets deleted:**\n- ✅ Product ID (Column A)\n- ✅ Product Name (Column B) \n- ✅ Quantity (Column C)\n- ✅ Price (Column D)\n- ✅ Category (Column E)\n- ✅ All other data in the row\n**Automatic ID Generation for New Products:**\n\n🆔 Automatic ID Generation for New Products\n\nWhen adding a new product without an ID:\n\nRead the sheet to find all existing IDs.\n\nDetect the highest numeric ID (ignore any empty or invalid entries).\n\nGenerate the next sequential number by adding 1 to the highest ID.\n\nExample:\n\nExisting IDs: 27, 28, 30\n\nNew product → Assigned ID: 31\n\nMaintain the same numeric ID format used in the sheet.\n\nIf IDs have a prefix (like ID 30), follow the same prefix pattern: ID 31, ID 32, etc.\n\nIf IDs are plain numbers, continue sequentially (e.g., 30 → 31 → 32).\n\nConfirm creation:\n\n“Added new product ‘Monitor’ with ID 31 following the existing numeric sequence.”\n## Guidelines\n\n- Always read the sheet first before making any updates or deletions\n- Only update or delete information that has actually changed or is requested to be removed\n- Be precise with your actions – don't modify unrelated data\n- If the message is unclear, ask for clarification before updating or deleting\n- Provide a brief summary of what you updated or deleted after making changes\n\n## Response Format\n\n1. Read the current sheet data\n2. Identify what needs updating, adding, or deleting based on the message\n3. Make the necessary changes using the appropriate tool\n4. Confirm: \"Updated [specific information] in the sheet.\" OR \"Deleted [specific rows/columns] from the sheet.\"\n\nStay focused, efficient, and accurate in your updates and deletions."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        384,
+        0
+      ],
+      "id": "2e45ae30-d702-4cba-94e1-f9837bb54839",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1lbkUL3h32z7kic-6r7FPXk1NijLKEolTcZoPrgFtbHs",
+          "mode": "list",
+          "cachedResultName": "Inventory Record Data",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1lbkUL3h32z7kic-6r7FPXk1NijLKEolTcZoPrgFtbHs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1lbkUL3h32z7kic-6r7FPXk1NijLKEolTcZoPrgFtbHs/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        768,
+        208
+      ],
+      "id": "5b0e01bf-1257-4b6f-b5ee-f3d607c4e845",
+      "name": "get rows",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "fxMHXD0Z0PKBNaUJ",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "sheetaccess",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "923ada63-cc8d-4a78-9679-1ca1c4781881",
+      "name": "Webhook",
+      "webhookId": "9a66ee2e-6cf5-4d33-bff7-e6c5f93e2fd4",
+      "alwaysOutputData": false,
+      "executeOnce": false
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        736,
+        0
+      ],
+      "id": "215b9aca-9ec3-4099-92d9-d918c83416d4",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.body.message}}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        368,
+        208
+      ],
+      "id": "90d9fd6a-8ed4-4c71-8f84-ef0cd897e74e",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "documentId": {
+          "__rl": true,
+          "value": "1lbkUL3h32z7kic-6r7FPXk1NijLKEolTcZoPrgFtbHs",
+          "mode": "list",
+          "cachedResultName": "Inventory Record Data",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1lbkUL3h32z7kic-6r7FPXk1NijLKEolTcZoPrgFtbHs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1lbkUL3h32z7kic-6r7FPXk1NijLKEolTcZoPrgFtbHs/edit#gid=0"
+        }
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        640,
+        208
+      ],
+      "id": "b70910a8-7644-4c23-9a20-ed125e921379",
+      "name": "Delete rows or columns from sheet in Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "fxMHXD0Z0PKBNaUJ",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "update rows": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get rows": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete rows or columns from sheet in Google Sheets": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "44127c93-db2f-4e7b-879d-2dfcfd024cbe",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b112d29823bf912aa99c4a7eabc7445b3bc3e5e206a7492bee67bd493a2c5517"
+  },
+  "id": "7Fia6Yvt5Xj4SYFN",
+  "tags": []
+}
