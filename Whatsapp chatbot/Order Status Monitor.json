@@ -1,0 +1,260 @@
+{
+  "name": "Order Status Monitor",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "value": "1F6y9ey5A6llO_9fss5EV2hrzoYiDY7lTg1_2KT9ncSI",
+          "mode": "list",
+          "cachedResultName": "Food Delivery System",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1F6y9ey5A6llO_9fss5EV2hrzoYiDY7lTg1_2KT9ncSI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 901201428,
+          "mode": "list",
+          "cachedResultName": "Orders",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1F6y9ey5A6llO_9fss5EV2hrzoYiDY7lTg1_2KT9ncSI/edit#gid=901201428"
+        },
+        "event": "rowUpdate",
+        "options": {
+          "columnsToWatch": [
+            "Status"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        -48
+      ],
+      "id": "98911b02-5110-4fcf-a674-91fe5c5a58eb",
+      "name": "Google Sheets Trigger",
+      "credentials": {
+        "googleSheetsTriggerOAuth2Api": {
+          "id": "OTZ9vx2dWcmQZur3",
+          "name": "Google Sheets Trigger account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.Status }}",
+                    "rightValue": "Preparing",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "a3962623-39af-490b-bed6-8eedd7d91cb2"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "50bb50fa-c58d-4c39-86bf-25079f6078e9",
+                    "leftValue": "={{ $json.Status }}",
+                    "rightValue": "Out for Delivery",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "0091a7cc-b776-46ca-a40c-76efd76be605",
+                    "leftValue": "={{ $json.Status }}",
+                    "rightValue": "Delivered",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        144,
+        -64
+      ],
+      "id": "d85129d5-7b04-484e-b6b7-822983a19b3c",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "856429460882028",
+        "recipientPhoneNumber": "+92 3110370870",
+        "textBody": "Your order is being prepared by our kitchen team 🍳.",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        416,
+        -208
+      ],
+      "id": "c614a946-1f7e-41d3-9d92-f804faba439c",
+      "name": "Preparing",
+      "webhookId": "3a15169b-1227-428f-830a-322890be6460",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "IflLgU1nrLh1k66C",
+          "name": "WhatsApp account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "856429460882028",
+        "recipientPhoneNumber": "+92 3110370870",
+        "textBody": "Your order is out for delivery 🚗💨 You’ll receive it soon!",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        416,
+        -48
+      ],
+      "id": "e33210a3-95ad-4228-84f6-79cd75259341",
+      "name": "Out for Delivery",
+      "webhookId": "3a15169b-1227-428f-830a-322890be6460",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "IflLgU1nrLh1k66C",
+          "name": "WhatsApp account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "856429460882028",
+        "recipientPhoneNumber": "+92 3110370870",
+        "textBody": "Your order has been delivered ✅! We’d love your feedback — please rate your CraveHub experience ⭐ (1–5).",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        416,
+        112
+      ],
+      "id": "dfcc4089-63c1-48a3-bbbf-4d31c8fa81d1",
+      "name": "Delivered",
+      "webhookId": "3a15169b-1227-428f-830a-322890be6460",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "IflLgU1nrLh1k66C",
+          "name": "WhatsApp account 3"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Sheets Trigger": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Preparing",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Out for Delivery",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Delivered",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [],
+        []
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "bce9f4af-e512-48f4-8b9c-8c3b04274192",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "65ec002f0aa4b9705f897d8613dd089b272aba79c16fc2f91428c29ab4d916a7"
+  },
+  "id": "bQRcXNRlrZlFUj1O",
+  "tags": []
+}

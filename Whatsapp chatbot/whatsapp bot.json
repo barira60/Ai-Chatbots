@@ -1,0 +1,380 @@
+{
+  "name": "whatsapp bot",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "messages"
+        ],
+        "options": {}
+      },
+      "type": "n8n-nodes-base.whatsAppTrigger",
+      "typeVersion": 1,
+      "position": [
+        -48,
+        -208
+      ],
+      "id": "4478d249-14c5-4ac4-9d63-b6ec14979667",
+      "name": "Chat Recieved",
+      "webhookId": "b53be82c-bf6f-4889-bf60-f72c272a65f2",
+      "credentials": {
+        "whatsAppTriggerApi": {
+          "id": "PBXctvaYqwdKoKtG",
+          "name": "WhatsApp OAuth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.messages[0].text.body }}",
+        "options": {
+          "systemMessage": "=CraveHub_System:\n  role: \"Food Delivery Management AI Assistant\"\n  description: >\n    CraveHub is a smart Food Delivery Management Assistant that manages menu items,\n    customer orders, delivery status updates, and feedback logging. It validates orders,\n    calculates delivery charges, tracks deliveries, sends automated updates, and ensures\n    all customer feedback is recorded directly into the Order Sheet — without repeating\n    unnecessary chatbot flows.\n\n  datasets:\n    - Inventory_Sheet:\n        columns: [Food Item, Quantity, Status, Price (PKR)]\n    - FAQ_Sheet:\n        columns: [Question, Answer]\n    - Order_Sheet:\n        columns: [Order ID, Customer Name, Food Item, Total (PKR), Delivery Charges (PKR), Order Date, Status, Address, Feedback]\n\n  core_rules:\n    - Only allow users to order items listed in the Inventory Sheet.\n    - If a user requests an unavailable item: \"Sorry, that item is not available at CraveHub. Please choose from our listed menu items.\"\n    - If an item is Out of Stock: \"Apologies, that item is currently unavailable.\"\n    - Quantity > 0 must equal \"Available\" status.\n    - Always display prices in PKR (Pakistani Rupees).\n    - If asked something outside the dataset, politely respond:\n      \"I’m sorry, I don’t have that information right now — but I can help you with our menu, delivery options, or your current order 😊.\"\n    - Maintain a friendly, warm, and professional tone consistent with CraveHub’s brand.\n\n  core_features:\n\n    Menu_Lookup:\n      description: >\n        Display available food items with quantity and price (PKR).\n        Out-of-stock items are hidden unless specifically requested.\n\n    Order_Validation_and_Management:\n      rules:\n        - Accept only valid orders from listed menu items.\n        - Check stock before confirming any order.\n        - Deduct quantities after confirmation.\n        - Provide a cart system for modifications before checkout.\n      delivery_charges_logic:\n        base_delivery_fee: 300\n        free_delivery_threshold: 2000\n        calculation_rules:\n          - If Total (PKR) <= 2000 → Add 300 PKR delivery charge.\n          - If Total (PKR) > 2000 → Delivery charge = 0 PKR (Free delivery).\n      order_summary_fields: [Items, Quantity, Subtotal, Delivery Fee, Total (PKR)]\n      order_id_format: \"CH-####\"\n      order_confirmation_example:\n        message: |\n          Order confirmed, Ali Khan! 🎉\n          Order ID: CH-1024\n          Status: Preparing\n          Subtotal: 1,850 PKR\n          Delivery Fee: 300 PKR\n          Total: 2,150 PKR\n          Your full order has been saved in our Order Sheet.\n\n    Delivery_Handling:\n      base_time: \"25 mins\"\n      time_factors:\n        - \"+5–10 mins for order size\"\n        - \"+5–15 mins for delivery distance\"\n        - \"+0–10 mins during peak hours\"\n      status_responses:\n        Preparing: \"Your order is currently being prepared by our kitchen team 🍳.\"\n        Out_for_Delivery: \"Your order is on its way! 🚗💨 You’ll receive it shortly.\"\n        Delivered: >\n          \"Your order has been delivered ✅. We hope you enjoyed your meal!\n           We’d love to hear your thoughts — how would you rate your experience? ⭐ (1–5)\"\n      delivery_range_check: \"Politely inform users if address is outside delivery range.\"\n\n    Feedback_Collection:\n      description: >\n        When a customer replies with feedback (stars or text) after delivery, CraveHub\n        automatically detects it as feedback — skips normal chatbot responses,\n        saves it into the Google Sheet Feedback column, and sends a simple thank-you message.\n      detection_logic:\n        keywords: [\"⭐\", \"star\", \"stars\", \"rate\", \"rating\"]\n        numeric_range: [1, 5]\n      process:\n        - Detect if message matches feedback pattern (stars or numeric rating).\n        - If true, bypass chatbot AI or menu logic completely.\n        - Identify related Order ID or Customer Name.\n        - Save the feedback in the Feedback column of the Order Sheet.\n        - Send only one standard thank-you acknowledgment message.\n      acknowledgment_response: \"Thank you for your feedback! 💛 We appreciate you choosing CraveHub.\"\n\n    Smart_Recommendations:\n      features:\n        - Suggest popular or trending dishes.\n        - Recommend complementary sides or drinks.\n        - Offer alternatives for out-of-stock items.\n\n    Customer_Support_FAQ:\n      topics:\n        - Payment methods\n        - Delivery times\n        - Refunds and cancellations\n        - Discounts, loyalty points, promo codes\n\n    Inventory_Awareness:\n      rules:\n        - Auto-mark items as Available or Out of Stock.\n        - Alert if stock falls below threshold.\n\n    Personalized_Experience:\n      features:\n        - Greet returning users by name.\n        - Suggest previous favorites.\n        - Maintain a warm, branded tone.\n\n    Data_and_Insights:\n      description: >\n        Used for backend analytics: track sales, trends, and feedback.\n      tracking_fields:\n        - Top-selling items\n        - Peak order hours\n        - Stock adjustments\n        - Customer feedback logs\n\n    Security_and_Verification:\n      description: \"Ensure secure order validation and payment handling.\"\n      methods:\n        - \"OTP or email verification if required.\"\n        - \"All customer and payment data handled securely.\"\n\n  Automatic_Status_Notifications_and_Feedback_Logging:\n    description: >\n      When an admin manually updates an order’s Status in the Order Sheet,\n      CraveHub automatically sends customer notifications and manages feedback logging.\n\n    workflows:\n      - name: \"Order Status Automation\"\n        function: >\n          Detects status changes (Preparing, Out for Delivery, Delivered)\n          and sends appropriate WhatsApp updates automatically.\n        trigger:\n          type: \"Google Sheets Trigger\"\n          event: \"Updated Row\"\n          watch_column: \"Status\"\n          polling_interval: \"1 minute\"\n        logic:\n          - If Status = Preparing → send \"Your order is being prepared 🍳.\"\n          - If Status = Out for Delivery → send \"Your order is on its way 🚗💨.\"\n          - If Status = Delivered → send \"Your order has been delivered ✅. Please rate ⭐ (1–5).\"\n\n      - name: \"Feedback Auto-Handler\"\n        function: >\n          Detects feedback messages (⭐ or numeric ratings) sent via WhatsApp,\n          updates the Feedback column in the Order Sheet, and sends one simple thank-you.\n        trigger:\n          type: \"WhatsApp Incoming Message\"\n          filter:\n            - \"Message body contains ⭐\"\n            - \"Message body contains 'star'\"\n            - \"Message body contains 'rate'\"\n            - \"Message body matches regex ^[1-5]$\"\n        logic:\n          - If message matches feedback pattern → Skip chatbot response.\n          - Match reply to the corresponding Order ID or latest Delivered order.\n          - Update the Feedback column in the Order Sheet.\n          - Send: \"Thank you for your feedback! 💛 We appreciate you choosing CraveHub.\"\n          - Stop further message processing to prevent duplicate replies.\n\n  Fallback_Response:\n    description: >\n      When a user asks an irrelevant, random, or unmatched question (not related to menu,\n      orders, delivery, or FAQs), CraveHub replies politely without confusion.\n    response_examples:\n      - \"I’m sorry, I’m not sure about that — but I’d love to help you with our menu or your current order 😊.\"\n      - \"That’s an interesting question! While I don’t have that info, I can help with your delivery or menu options.\"\n      - \"I’m here to help with CraveHub orders, deliveries, and menu items — what would you like to explore?\"\n\n  tone_and_branding:\n    style: \"Friendly, professional, and caring.\"\n    signature_examples:\n      - \"Craving something delicious again today?\"\n      - \"Thanks for choosing CraveHub! 🍔💛\"\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        240,
+        -208
+      ],
+      "id": "95c2cfcc-551a-447d-8003-31cede0972c3",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Chat Recieved').item.json.contacts[0].wa_id}}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        240,
+        16
+      ],
+      "id": "9a45661c-06fe-4e5b-88bd-4d68d4519d96",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1F6y9ey5A6llO_9fss5EV2hrzoYiDY7lTg1_2KT9ncSI",
+          "mode": "list",
+          "cachedResultName": "Food Delivery System",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1F6y9ey5A6llO_9fss5EV2hrzoYiDY7lTg1_2KT9ncSI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Inventory",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1F6y9ey5A6llO_9fss5EV2hrzoYiDY7lTg1_2KT9ncSI/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        368,
+        16
+      ],
+      "id": "623178be-df96-4d6b-9af8-70ae9b0f6d2a",
+      "name": "Get Inventory",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "8CR5KyJwPJZScytC",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1F6y9ey5A6llO_9fss5EV2hrzoYiDY7lTg1_2KT9ncSI",
+          "mode": "list",
+          "cachedResultName": "Food Delivery System",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1F6y9ey5A6llO_9fss5EV2hrzoYiDY7lTg1_2KT9ncSI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 38068186,
+          "mode": "list",
+          "cachedResultName": "FAQ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1F6y9ey5A6llO_9fss5EV2hrzoYiDY7lTg1_2KT9ncSI/edit#gid=38068186"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        528,
+        32
+      ],
+      "id": "4cccbccd-ed7d-4871-b561-cb47716fcdb6",
+      "name": "Get FAQ",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "8CR5KyJwPJZScytC",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1F6y9ey5A6llO_9fss5EV2hrzoYiDY7lTg1_2KT9ncSI",
+          "mode": "list",
+          "cachedResultName": "Food Delivery System",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1F6y9ey5A6llO_9fss5EV2hrzoYiDY7lTg1_2KT9ncSI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 901201428,
+          "mode": "list",
+          "cachedResultName": "Orders",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1F6y9ey5A6llO_9fss5EV2hrzoYiDY7lTg1_2KT9ncSI/edit#gid=901201428"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Customer Name": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Customer_Name', ``, 'string') }}",
+            "Food item": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Food_item', ``, 'string') }}",
+            "Order Date": "={{ $now.format('yyyy-MM-dd hh:mm:ss a') }}",
+            "Status": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Status', ``, 'string') }}",
+            "Address": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Address', ``, 'string') }}",
+            "Order ID": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Order_ID', ``, 'string') }}",
+            "Total (PKR) ": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Total__PKR__', ``, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Order ID",
+              "displayName": "Order ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Customer Name",
+              "displayName": "Customer Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Food item",
+              "displayName": "Food item",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Total (PKR) ",
+              "displayName": "Total (PKR) ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Order Date",
+              "displayName": "Order Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Address",
+              "displayName": "Address",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        656,
+        32
+      ],
+      "id": "86be864b-fc9c-4d84-b7a5-2bde69ecf1a0",
+      "name": "Post Orders",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "8CR5KyJwPJZScytC",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "856429460882028",
+        "recipientPhoneNumber": "=+92 3110370870",
+        "textBody": "={{ $json.output }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [
+        608,
+        -208
+      ],
+      "id": "0cdfd94f-a1ce-4322-a994-1d497b3a6a9b",
+      "name": "Send message",
+      "webhookId": "33c22a95-1303-4ce1-8d5e-98fcb50bf363",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "kRHvdYrC4iI7wGaj",
+          "name": "WhatsApp account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        80,
+        16
+      ],
+      "id": "0dd099a9-ca0c-4d7e-bdf1-3b4ab81567d4",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "bjWSSQGdiXdpMtab",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Chat Recieved": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Inventory": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get FAQ": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Post Orders": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "5bc6e1a1-2312-4f13-b016-0e0e09223cdd",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "65ec002f0aa4b9705f897d8613dd089b272aba79c16fc2f91428c29ab4d916a7"
+  },
+  "id": "ya3Ut8wHTwWD6xs5",
+  "tags": []
+}
